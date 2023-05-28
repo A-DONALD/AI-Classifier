@@ -17,7 +17,7 @@ economy_data = load_files(os.path.join(data_dir, "data_sets/economy"))
 
 X_sport, y_sport = sport_data.data, np.zeros(len(sport_data.data))
 X_politics, y_politics = politics_data.data, np.ones(len(politics_data.data))
-X_economy, y_economy = economy_data.data, np.ones(len(economy_data.data))
+X_economy, y_economy = economy_data.data, np.twos(len(economy_data.data))
 
 X = np.concatenate((X_sport, X_politics, X_economy))
 y = np.concatenate((y_sport, y_politics, y_economy))
