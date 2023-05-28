@@ -1,7 +1,12 @@
 body {
     background: linear-gradient(to left, #0D0D0E, #17202A, #0D0D0E);
     color: #2B87C8;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
 }
+
 header {
     background-color: #1C2833;
     color: #2B87C8;
@@ -9,17 +14,28 @@ header {
     border-radius: 5px;
     font-family: 'Jost', sans-serif;
 }
+
+img{
+    border-radius: 10px;
+}
+
+.block{
+
+}
+
 .container {
     display: flex;
-    height: 100vh;
+    height: 80vh;
 }
 
 .column {
     flex: 1;
     padding: 20px;
+    margin: 0 auto;
 }
 
 #dropZone {
+    color: white;
     border-radius: 10px;
     border: 5px dashed #666;
     padding: 20px;
@@ -28,7 +44,7 @@ header {
     width: 150px;
     margin: auto;
     margin-top: 10px;
-    background-color: #cbc7c776;
+    backdrop-filter: blur(5px);
 }
 
 #dropZone.drag-over{
