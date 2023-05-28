@@ -7,8 +7,10 @@ body {
     padding: 0px;
 }
 
-header {
+header, footer {
     background-color: #1C2833;
+    height: 40px;
+    line-height: 40px;
     color: #2B87C8;
     text-align: center;
     border-radius: 5px;
