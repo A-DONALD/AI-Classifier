@@ -7,7 +7,6 @@ import numpy as np
 import re
 import nltk
 from bs4 import BeautifulSoup
-from sklearn.datasets import load_files
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from nltk.corpus import stopwords
@@ -16,13 +15,15 @@ nltk.download('stopwords')
 data_dir = os.path.dirname(os.path.abspath(__file__))
 data = []
 
-# Load files
+# Load data sets into data frame
 for filename in os.listdir('../data_sets'):
     if filename.endswith('.sgm'):
         try:
+            print("loading files ...")
             with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
                 content = f.read()
         except UnicodeDecodeError:
+            print("Error: cannot decode this files")
             continue
 
         soup = BeautifulSoup(content, 'html.parser')
@@ -81,27 +82,30 @@ for i, x in enumerate(X):
         X_test.append(x)
         y_test.append(y[i])
 
-# Algorithm of random forest
-classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
-classifier.fit(X_train, y_train)
-y_pred = classifier.predict(X_test)
+classifier = ''
 
 if os.path.exists(os.path.join(data_dir, 'model', "text_classifier.pkl")):
     # Open the model
     with open(os.path.join(data_dir, 'model', 'text_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
 
+    classifier = model
     # Evaluating the model save
-    y_pred2 = model.predict(X_test)
+    y_pred = model.predict(X_test)
 
-    print(confusion_matrix(y_test, y_pred2))
-    print(classification_report(y_test, y_pred2))
-    print(accuracy_score(y_test, y_pred2))
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
     print("...")
 
 else:
-    # Evaluating the model
+    # Algorithm of random forest
+    classificator = RandomForestClassifier(n_estimators=1000, random_state=0)
+    classificator.fit(X_train, y_train)
+    y_pred = classificator.predict(X_test)
 
+    classifier = classificator
+    # Evaluating the model
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
@@ -110,11 +114,10 @@ else:
     with open(os.path.join(data_dir, 'model', 'text_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(classifier, picklefile)
 
-
 def classify_text():
     text = entry.get("1.0", tk.END)
     if len(text) == 0:
-        messagebox.showwarning("Avertissement", "Veuillez saisir du texte.")
+        messagebox.showwarning("Advertisement", "Please enter text.")
         return
 
     # Prétraitement du texte
@@ -137,18 +140,19 @@ def classify_text():
     label = classifier.predict(text_features)[0]
 
     # Afficher le résultat
-    messagebox.showinfo("Résultat", "Label prédit : {}".format(label))
+    messagebox.showinfo("Result", "Label predict : {}".format(label))
 
 
-# Initialiser les composants Tkinter
+# Initialize the components of Tkinter
 root = tk.Tk()
-root.title("Classification de texte")
+root.title("AI - Classifier")
 root.geometry("500x300")
 
 model_label = ttk.Label(root, text="Select a model ...")
 model_label.pack()
-model_list = [filename for filename in os.listdir(data_dir + '\\model') if filename.endswith(".pkl")]
 
+# list of the different model in your model folder
+model_list = [filename for filename in os.listdir(data_dir + '\\model') if filename.endswith(".pkl")]
 select_model = ttk.Combobox(root, values=model_list, width=40)
 select_model.pack()
 
@@ -157,7 +161,7 @@ entry = tk.Text(root, height=10, width=50)
 entry.pack(pady=20)
 
 # Créer le bouton pour lancer la classification
-button = ttk.Button(root, text="Classer le texte", command=classify_text)
+button = ttk.Button(root, text="Launch the classifier", command=classify_text)
 button.pack()
 
 # Lancer la boucle Tkinter
