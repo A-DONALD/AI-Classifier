@@ -3,11 +3,10 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
-import numpy as np
 import re
 import nltk
 from bs4 import BeautifulSoup
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from nltk.corpus import stopwords
 nltk.download('stopwords')
@@ -31,7 +30,7 @@ for filename in os.listdir('../data_sets'):
 
         for reuter in reuters:
             if reuter['topics'] == "YES" and reuter.topics.text != '' and reuter.body is not None:
-                data.append({ 'content': reuter.body.text,'target': reuter.topics.d.text,'lewissplit': reuter['lewissplit']})
+                data.append({'content': reuter.body.text, 'target': reuter.topics.d.text, 'lewissplit': reuter['lewissplit']})
 
 X, y = [item['content'] for item in data], [item['target'] for item in data]
 # Text preprocessing
@@ -82,7 +81,8 @@ for i, x in enumerate(X):
         X_test.append(x)
         y_test.append(y[i])
 
-classifier = ''
+RandomForest_classifier = ''
+GradientBoosting_classifier = ''
 
 if os.path.exists(os.path.join(data_dir, 'model', "text_classifier.pkl")):
     # Open the model
@@ -103,16 +103,32 @@ else:
     classificator = RandomForestClassifier(n_estimators=1000, random_state=0)
     classificator.fit(X_train, y_train)
     y_pred = classificator.predict(X_test)
-
-    classifier = classificator
+    RandomForest_classifier = classificator
     # Evaluating the model
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
-
     # Save the model
-    with open(os.path.join(data_dir, 'model', 'text_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(classifier, picklefile)
+    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
+        pickle.dump(RandomForest_classifier, picklefile)
+
+    # GradientBoostingClassifier
+    classificator = GradientBoostingClassifier(n_estimators=1000, learning_rate=0.1, max_depth=3, random_state=0)
+    classificator.fit(X_train, y_train)
+    y_pred = classificator.predict(X_test)
+    GradientBoosting_classifier = classificator
+    # Evaluating the model
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    # Save the model
+    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
+        pickle.dump(RandomForest_classifier, picklefile)
+
+    # Evaluating the model
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
 
 def classify_text():
     text = entry.get("1.0", tk.END)
