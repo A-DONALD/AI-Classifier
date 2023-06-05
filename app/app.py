@@ -6,10 +6,11 @@ from tkinter import ttk
 import re
 import nltk
 from bs4 import BeautifulSoup
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from nltk.corpus import stopwords
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.neighbors import KNeighborsClassifier
 
 nltk.download('stopwords')
 
@@ -84,71 +85,92 @@ for i, x in enumerate(X):
         y_test.append(y[i])
 
 RandomForest_classifier = ''
-GradientBoosting_classifier = ''
+KNeighbors_classifier = ''
 multinomial_classifier = ''
 
 if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl"))\
         and os.path.exists(os.path.join(data_dir, 'model', "GradientBoosting_classifier.pkl")) \
         and os.path.exists(os.path.join(data_dir, 'model', "GradientBoosting_classifier.pkl")):
     # Open the model
-    with open(os.path.join(data_dir, 'model', 'text_classifier.pkl'), 'rb') as training_model:
+    print('Loading model')
+    print('RandomForestClassifier')
+    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
-
-    classifier = model
+    RandomForest_classifier = model
     # Evaluating the model save
-    y_pred = model.predict(X_test)
-
+    y_pred = RandomForest_classifier.predict(X_test)
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
-    print("...")
+    print('*******************************************************')
+
+    print('MultinomialNB')
+    with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'rb') as training_model:
+        model = pickle.load(training_model)
+    multinomial_classifier = model
+    # Evaluating the model save
+    y_pred = multinomial_classifier.predict(X_test)
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    print('*******************************************************')
+
+    print('KNeighborsClassifier')
+    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'rb') as training_model:
+        model = pickle.load(training_model)
+    KNeighbors_classifier = model
+    # Evaluating the model save
+    y_pred = KNeighbors_classifier.predict(X_test)
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    print('*******************************************************')
 
 # if in model we doesn't have all models of the classifier, we will create the model of that one
 else:
+    print('Creating model')
     # Algorithm of random forest
     print('RandomForestClassifier')
-    classificator = RandomForestClassifier(n_estimators=1000, random_state=0)
-    classificator.fit(X_train, y_train)
-    y_pred = classificator.predict(X_test)
-    RandomForest_classifier = classificator
+    RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
+    RandomForest_classifier.fit(X_train, y_train)
+    y_pred = RandomForest_classifier.predict(X_test)
     # Evaluating the model
-    print(...)
+    print('...')
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
     # Save the model
     with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(RandomForest_classifier, picklefile)
-
-    # GradientBoostingClassifier
-    print('GradientBoostingClassifier')
-    classificator = GradientBoostingClassifier(n_estimators=1000, learning_rate=0.1, max_depth=3, random_state=0)
-    classificator.fit(X_train, y_train)
-    y_pred = classificator.predict(X_test)
-    GradientBoosting_classifier = classificator
-    # Evaluating the model
-    print(...)
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
-    print(accuracy_score(y_test, y_pred))
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'GradientBoosting_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(GradientBoosting_classifier, picklefile)
+    print('*******************************************************')
 
     # Multinomial
     print('MultinomialNB')
-    classificator = MultinomialNB()
-    classificator.fit(X_train, y_train)
-    y_pred = classificator.predict(X_test)
-    multinomial_classifier = classificator
+    multinomial_classifier = MultinomialNB()
+    multinomial_classifier.fit(X_train, y_train)
+    y_pred = multinomial_classifier.predict(X_test)
     # Evaluating the model
-    print(...)
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
     # Save the model
     with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(multinomial_classifier, picklefile)
+    print('*******************************************************')
+
+    # KNeighborsClassifier
+    print('KNeighborsClassifier')
+    KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
+    KNeighbors_classifier.fit(X_train, y_train)
+    y_pred = KNeighbors_classifier.predict(X_test)
+    # Evaluating the model
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    # Save the model
+    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'wb') as picklefile:
+        pickle.dump(KNeighbors_classifier, picklefile)
+    print('*******************************************************')
 
 def classify_text():
     text = entry.get("1.0", tk.END)
@@ -173,7 +195,10 @@ def classify_text():
     text_features = tfidfconverter.transform(text_features).toarray()
 
     # Prédire le label
-    label = classifier.predict(text_features)[0]
+    choice = select_model.get()
+    with open(os.path.join(data_dir, 'model', choice), 'rb') as training_model:
+        current_model = pickle.load(training_model)
+    label = current_model.predict(text_features)[0]
 
     # Afficher le résultat
     messagebox.showinfo("Result", "Label predict : {}".format(label))
