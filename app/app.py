@@ -13,6 +13,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 
 nltk.download('stopwords')
+nltk.download('wordnet')
 
 data_dir = os.path.dirname(os.path.abspath(__file__))
 data = []
