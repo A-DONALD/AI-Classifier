@@ -1,9 +1,9 @@
 import pickle
 import os
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
 import re
+import colorama
+import webbrowser
 import nltk
 from bs4 import BeautifulSoup
 from sklearn.ensemble import RandomForestClassifier
@@ -11,22 +11,24 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 from nltk.corpus import stopwords
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
+from tkinter import messagebox
+from tkinter import ttk
 
-nltk.download('stopwords')
 nltk.download('wordnet')
+nltk.download('stopwords')
 
 data_dir = os.path.dirname(os.path.abspath(__file__))
 data = []
 
-# Load data sets into data frame
+# Load dictionary
+print("Loading files ", end=" ")
 for filename in os.listdir('../data_sets'):
     if filename.endswith('.sgm'):
         try:
-            print("loading files ...")
+            print("*", end=" ")
             with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
                 content = f.read()
         except UnicodeDecodeError:
-            print("Error: cannot decode this files")
             continue
 
         soup = BeautifulSoup(content, 'html.parser')
@@ -90,22 +92,11 @@ KNeighbors_classifier = ''
 multinomial_classifier = ''
 
 if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl"))\
-        and os.path.exists(os.path.join(data_dir, 'model', "GradientBoosting_classifier.pkl")) \
-        and os.path.exists(os.path.join(data_dir, 'model', "GradientBoosting_classifier.pkl")):
+        and os.path.exists(os.path.join(data_dir, 'model', "multinomial_classifier.pkl")) \
+        and os.path.exists(os.path.join(data_dir, 'model', "KNeighbors_classifier.pkl")):
     # Open the model
-    print('Loading model')
-    print('RandomForestClassifier')
-    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
-        model = pickle.load(training_model)
-    RandomForest_classifier = model
-    # Evaluating the model save
-    y_pred = RandomForest_classifier.predict(X_test)
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
-    print(accuracy_score(y_test, y_pred))
-    print('*******************************************************')
-
-    print('MultinomialNB')
+    print(' Loading model')
+    print(colorama.Fore.RED + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL)
     with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     multinomial_classifier = model
@@ -114,9 +105,8 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
-    print('*******************************************************')
 
-    print('KNeighborsClassifier')
+    print(colorama.Fore.RED + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL)
     with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     KNeighbors_classifier = model
@@ -125,13 +115,49 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print(accuracy_score(y_test, y_pred))
-    print('*******************************************************')
+
+    print(colorama.Fore.RED + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL)
+    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
+        model = pickle.load(training_model)
+    RandomForest_classifier = model
+    # Evaluating the model save
+    y_pred = RandomForest_classifier.predict(X_test)
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
 
 # if in model we doesn't have all models of the classifier, we will create the model of that one
 else:
     print('Creating model')
+
+    # Multinomial
+    print(colorama.Fore.RED + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL)
+    multinomial_classifier = MultinomialNB()
+    multinomial_classifier.fit(X_train, y_train)
+    y_pred = multinomial_classifier.predict(X_test)
+    # Evaluating the model
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    # Save the model
+    with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'wb') as picklefile:
+        pickle.dump(multinomial_classifier, picklefile)
+
+    # KNeighborsClassifier
+    print(colorama.Fore.RED + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL)
+    KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
+    KNeighbors_classifier.fit(X_train, y_train)
+    y_pred = KNeighbors_classifier.predict(X_test)
+    # Evaluating the model
+    print(confusion_matrix(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(accuracy_score(y_test, y_pred))
+    # Save the model
+    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'wb') as picklefile:
+        pickle.dump(KNeighbors_classifier, picklefile)
+
     # Algorithm of random forest
-    print('RandomForestClassifier')
+    print(colorama.Fore.RED + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL)
     RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
     RandomForest_classifier.fit(X_train, y_train)
     y_pred = RandomForest_classifier.predict(X_test)
@@ -143,35 +169,6 @@ else:
     # Save the model
     with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(RandomForest_classifier, picklefile)
-    print('*******************************************************')
-
-    # Multinomial
-    print('MultinomialNB')
-    multinomial_classifier = MultinomialNB()
-    multinomial_classifier.fit(X_train, y_train)
-    y_pred = multinomial_classifier.predict(X_test)
-    # Evaluating the model
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
-    print(accuracy_score(y_test, y_pred))
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(multinomial_classifier, picklefile)
-    print('*******************************************************')
-
-    # KNeighborsClassifier
-    print('KNeighborsClassifier')
-    KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
-    KNeighbors_classifier.fit(X_train, y_train)
-    y_pred = KNeighbors_classifier.predict(X_test)
-    # Evaluating the model
-    print(confusion_matrix(y_test, y_pred))
-    print(classification_report(y_test, y_pred))
-    print(accuracy_score(y_test, y_pred))
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(KNeighbors_classifier, picklefile)
-    print('*******************************************************')
 
 def classify_text():
     text = entry.get("1.0", tk.END)
@@ -204,11 +201,13 @@ def classify_text():
     # Afficher le résultat
     messagebox.showinfo("Result", "Label predict : {}".format(label))
 
+def github():
+    webbrowser.open_new(r"https://github.com/A-DONALD/ChatMaven")
 
 # Initialize the components of Tkinter
 root = tk.Tk()
 root.title("AI - Classifier")
-root.geometry("500x300")
+root.geometry("500x350")
 
 model_label = ttk.Label(root, text="Select a model ...")
 model_label.pack()
@@ -222,9 +221,19 @@ select_model.pack()
 entry = tk.Text(root, height=10, width=50)
 entry.pack(pady=20)
 
+entry_label = ttk.Label(root, text="Click here to execute:")
+entry_label.pack()
+
 # Créer le bouton pour lancer la classification
 button = ttk.Button(root, text="Launch the classifier", command=classify_text)
 button.pack()
+
+github_label = ttk.Label(root, text="Found the project on github:")
+github_label.pack()
+
+# Creates a button that, when clicked, calls the function that sends you to your hyperlink.
+link = ttk.Button(root, text="Github", command=github)
+link.pack(padx=10, pady=10)
 
 # Lancer la boucle Tkinter
 root.mainloop()
