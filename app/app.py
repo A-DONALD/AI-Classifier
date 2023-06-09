@@ -202,7 +202,7 @@ def classify_text():
     messagebox.showinfo("Result", "Label predict : {}".format(label))
 
 def github():
-    webbrowser.open_new(r"https://github.com/A-DONALD/ChatMaven")
+    webbrowser.open_new(r"https://github.com/A-DONALD/AI-Classifier")
 
 # Initialize the components of Tkinter
 root = tk.Tk()
