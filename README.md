@@ -45,7 +45,7 @@ Before you begin, make sure you have the following installed on your local machi
    cd AI-Classifier
    ```
 
-2. Execute the `app.py` script directly in the location folder or with the commands:
+2. Execute the `app.py` script with the commands:
 
    ```
    python app.py
