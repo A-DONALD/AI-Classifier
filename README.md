@@ -39,11 +39,17 @@ Before you begin, make sure you have the following installed on your local machi
 
 ## Running the Application
 
-1. Execute the `run.py` script with the commands:
+1. After the requirements has been installed, navigate to the app folder:
 
    ```
-   python run.py
+   cd AI-Classifier
    ```
 
-2. More information about the project in the user manual: 
+2. Execute the `app.py` script directly in the location folder or with the commands:
+
+   ```
+   python app.py
+   ```
+
+3. More information about the project in the user manual: 
 
