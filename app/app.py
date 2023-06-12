@@ -96,60 +96,60 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
         and os.path.exists(os.path.join(data_dir, 'model', "KNeighbors_classifier.pkl")):
     # Open the model
     print(' Loading model')
-    print(colorama.Fore.RED + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     multinomial_classifier = model
     # Evaluating the model save
     y_pred = multinomial_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
 
-    print(colorama.Fore.RED + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     KNeighbors_classifier = model
     # Evaluating the model save
     y_pred = KNeighbors_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
 
-    print(colorama.Fore.RED + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     RandomForest_classifier = model
     # Evaluating the model save
     y_pred = RandomForest_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"     ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
 
 # if in model we doesn't have all models of the classifier, we will create the model of that one
 else:
     print('Creating model')
 
     # Multinomial
-    print(colorama.Fore.RED + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
     multinomial_classifier = MultinomialNB()
     multinomial_classifier.fit(X_train, y_train)
     y_pred = multinomial_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
     # Save the model
     with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(multinomial_classifier, picklefile)
 
     # KNeighborsClassifier
-    print(colorama.Fore.RED + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
     KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
     KNeighbors_classifier.fit(X_train, y_train)
     y_pred = KNeighbors_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
     # Save the model
     with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(KNeighbors_classifier, picklefile)
 
     # Algorithm of random forest
-    print(colorama.Fore.RED + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
     RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
     RandomForest_classifier.fit(X_train, y_train)
     y_pred = RandomForest_classifier.predict(X_test)
-    print(accuracy_score(y_test, y_pred))
+    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
     # Save the model
     with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
         pickle.dump(RandomForest_classifier, picklefile)
