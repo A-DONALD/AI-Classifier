@@ -25,7 +25,7 @@ print("Loading files ", end=" ")
 for filename in os.listdir('../data_sets'):
     if filename.endswith('.sgm'):
         try:
-            print("*", end=" ")
+            print(colorama.Back.WHITE + " " + colorama.Style.RESET_ALL, end=" ")
             with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
                 content = f.read()
         except UnicodeDecodeError:
@@ -99,7 +99,7 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
         and os.path.exists(os.path.join(data_dir, 'model', "KNeighbors_classifier.pkl")):
     # Open the model
     print(' Loading model')
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     multinomial_classifier = model
@@ -107,7 +107,7 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
     y_pred = multinomial_classifier.predict(X_test)
     print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
 
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     KNeighbors_classifier = model
@@ -115,7 +115,7 @@ if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")
     y_pred = KNeighbors_classifier.predict(X_test)
     print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
 
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
     with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
         model = pickle.load(training_model)
     RandomForest_classifier = model
@@ -128,7 +128,7 @@ else:
     print('Creating model')
 
     # Multinomial
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
     multinomial_classifier = MultinomialNB()
     multinomial_classifier.fit(X_train, y_train)
     y_pred = multinomial_classifier.predict(X_test)
@@ -138,7 +138,7 @@ else:
         pickle.dump(multinomial_classifier, picklefile)
 
     # KNeighborsClassifier
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
     KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
     KNeighbors_classifier.fit(X_train, y_train)
     y_pred = KNeighbors_classifier.predict(X_test)
@@ -148,7 +148,7 @@ else:
         pickle.dump(KNeighbors_classifier, picklefile)
 
     # Algorithm of random forest
-    print(colorama.Fore.BLACK + colorama.Back.GREEN + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
+    print(colorama.Fore.BLACK + colorama.Back.WHITE + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
     RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
     RandomForest_classifier.fit(X_train, y_train)
     y_pred = RandomForest_classifier.predict(X_test)
