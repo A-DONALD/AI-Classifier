@@ -17,214 +17,172 @@ from tkinter import ttk
 nltk.download('wordnet')
 nltk.download('stopwords')
 
-data_dir = os.path.dirname(os.path.abspath(__file__))
-data = []
+class MainApp:
+    def __init__(self):
+        self.data_dir = os.path.dirname(os.path.abspath(__file__))
+        self.data = []
+        self.documents = []
 
-# Load dictionary
-print("Loading files ", end=" ")
-for filename in os.listdir('../data_sets'):
-    if filename.endswith('.sgm'):
-        try:
-            print(colorama.Back.WHITE + " " + colorama.Style.RESET_ALL, end=" ")
-            with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
-                content = f.read()
-        except UnicodeDecodeError:
-            continue
+        self.X_train, self.X_test, self.y_train, self.y_test = [], [], [], []
 
-        soup = BeautifulSoup(content, 'html.parser')
-        reuters = soup.findAll('reuters')
+        self.RandomForest_classifier = ''
+        self.KNeighbors_classifier = ''
+        self.multinomial_classifier = ''
+        self.vectorizer = None
+        self.tfidfconverter = None
 
-        for reuter in reuters:
-            if reuter['topics'] == "YES" and reuter.topics.text != '' and reuter.body is not None:
-                data.append(
-                    {'content': reuter.body.text, 'target': reuter.topics.d.text, 'lewissplit': reuter['lewissplit']})
+        self.load_data()
+        self.preprocess_data()
+        self.extract_features()
+        self.split_data()
+        self.load_or_create_models()
 
-X, y = [item['content'] for item in data], [item['target'] for item in data]
-# Text preprocessing
-documents = []
+        self.create_gui()
 
-from nltk.stem import WordNetLemmatizer
+    def load_data(self):
+        print("Loading files ", end=" ")
+        for filename in os.listdir('../data_sets'):
+            if filename.endswith('.sgm'):
+                try:
+                    with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    print(colorama.Back.GREEN + " " + colorama.Style.RESET_ALL, end=" ")
+                except UnicodeDecodeError:
+                    print(colorama.Back.RED + " " + colorama.Style.RESET_ALL, end=" ")
+                    continue
 
-stemmer = WordNetLemmatizer()
+                print(colorama.Back.GREEN + " " + colorama.Style.RESET_ALL, end=" ")
+                soup = BeautifulSoup(content, 'html.parser')
+                reuters = soup.findAll('reuters')
 
-for sen in range(0, len(X)):
-    # Remove all the special characters
-    document = re.sub(r'\W', ' ', str(X[sen]))
+                for reuter in reuters:
+                    if reuter['topics'] == "YES" and reuter.topics.text != '' and reuter.body is not None:
+                        self.data.append({'content': reuter.body.text, 'target': reuter.topics.d.text, 'lewissplit': reuter['lewissplit']})
 
-    # remove all single characters
-    document = re.sub(r'\s+[a-zA-Z]\s+', ' ', document)
+        self.X, self.y = [item['content'] for item in self.data], [item['target'] for item in self.data]
 
-    # Remove single characters from the start
-    document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
+    def preprocess_data(self):
+        from nltk.stem import WordNetLemmatizer
+        stemmer = WordNetLemmatizer()
 
-    # Converting to Lowercase
-    document = document.lower()
+        for sen in range(0, len(self.X)):
+            document = re.sub(r'\W', ' ', str(self.X[sen]))
+            document = re.sub(r'\s+[a-zA-Z]\s+', ' ', document)
+            document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
+            document = document.lower()
+            document = document.split()
+            document = [stemmer.lemmatize(word) for word in document]
+            document = ' '.join(document)
+            self.documents.append(document)
 
-    # Lemmatization
-    document = document.split()
+    def extract_features(self):
+        from sklearn.feature_extraction.text import CountVectorizer
+        from sklearn.feature_extraction.text import TfidfTransformer
 
-    document = [stemmer.lemmatize(word) for word in document]
-    document = ' '.join(document)
+        self.vectorizer = CountVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))
+        self.X = self.vectorizer.fit_transform(self.documents).toarray()
 
-    documents.append(document)
+        self.tfidfconverter = TfidfTransformer()
+        self.X = self.tfidfconverter.fit_transform(self.X).toarray()
 
-# Convert word to number: type bag of words
-from sklearn.feature_extraction.text import CountVectorizer
+    def split_data(self):
+        for i, x in enumerate(self.X):
+            if self.data[i]['lewissplit'].lower() == 'train':
+                self.X_train.append(x)
+                self.y_train.append(self.y[i])
+            elif self.data[i]['lewissplit'].lower() == 'test':
+                self.X_test.append(x)
+                self.y_test.append(self.y[i])
 
-vectorizer = CountVectorizer(max_features=1500, min_df=5, max_df=0.7, stop_words=stopwords.words('english'))
-X = vectorizer.fit_transform(documents).toarray()
+    def load_or_create_models(self):
+        print(" ")
+        if os.path.exists('model/RandomForest_classifier.pkl'):
+            self.RandomForest_classifier = pickle.load(open('model/RandomForest_classifier.pkl', 'rb'))
+        else:
+            self.RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
+            self.RandomForest_classifier.fit(self.X_train, self.y_train)
+            pickle.dump(self.RandomForest_classifier, open('model/RandomForest_classifier.pkl', 'wb'))
+        print("Load Random Forest:", end=' ')
+        print(round(accuracy_score(self.y_test, self.RandomForest_classifier.predict(self.X_test)), 3))
 
-# Find TFIDF
-from sklearn.feature_extraction.text import TfidfTransformer
+        if os.path.exists('model/KNeighbors_classifier.pkl'):
+            self.KNeighbors_classifier = pickle.load(open('model/KNeighbors_classifier.pkl', 'rb'))
+        else:
+            self.KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
+            self.KNeighbors_classifier.fit(self.X_train, self.y_train)
+            pickle.dump(self.KNeighbors_classifier, open('model/KNeighbors_classifier.pkl', 'wb'))
+        print("Load K-Nearest Neighbors:", end=' ')
+        print(round(accuracy_score(self.y_test, self.KNeighbors_classifier.predict(self.X_test)), 3))
 
-tfidfconverter = TfidfTransformer()
-X = tfidfconverter.fit_transform(X).toarray()
-
-# Training and Testing Sets
-X_train, X_test, y_train, y_test = [], [], [], []
-for i, x in enumerate(X):
-    if data[i]['lewissplit'].lower() == 'train':
-        X_train.append(x)
-        y_train.append(y[i])
-    elif data[i]['lewissplit'].lower() == 'test':
-        X_test.append(x)
-        y_test.append(y[i])
-
-RandomForest_classifier = ''
-KNeighbors_classifier = ''
-multinomial_classifier = ''
-
-if os.path.exists(os.path.join(data_dir, 'model', "RandomForest_classifier.pkl")) \
-        and os.path.exists(os.path.join(data_dir, 'model', "multinomial_classifier.pkl")) \
-        and os.path.exists(os.path.join(data_dir, 'model', "KNeighbors_classifier.pkl")):
-    # Open the model
-    print(' Loading model')
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
-    with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'rb') as training_model:
-        model = pickle.load(training_model)
-    multinomial_classifier = model
-    # Evaluating the model save
-    y_pred = multinomial_classifier.predict(X_test)
-    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
-    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'rb') as training_model:
-        model = pickle.load(training_model)
-    KNeighbors_classifier = model
-    # Evaluating the model save
-    y_pred = KNeighbors_classifier.predict(X_test)
-    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
-    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'rb') as training_model:
-        model = pickle.load(training_model)
-    RandomForest_classifier = model
-    # Evaluating the model save
-    y_pred = RandomForest_classifier.predict(X_test)
-    print(f"     ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-
-# if in model we doesn't have all models of the classifier, we will create the model of that one
-else:
-    print('Creating model')
-
-    # Multinomial
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "MultinomialNB" + colorama.Style.RESET_ALL, end=" ")
-    multinomial_classifier = MultinomialNB()
-    multinomial_classifier.fit(X_train, y_train)
-    y_pred = multinomial_classifier.predict(X_test)
-    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'multinomial_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(multinomial_classifier, picklefile)
-
-    # KNeighborsClassifier
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "KNeighborsClassifier" + colorama.Style.RESET_ALL, end=" ")
-    KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
-    KNeighbors_classifier.fit(X_train, y_train)
-    y_pred = KNeighbors_classifier.predict(X_test)
-    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'KNeighbors_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(KNeighbors_classifier, picklefile)
-
-    # Algorithm of random forest
-    print(colorama.Fore.BLACK + colorama.Back.WHITE + "RandomForestClassifier" + colorama.Style.RESET_ALL, end=" ")
-    RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
-    RandomForest_classifier.fit(X_train, y_train)
-    y_pred = RandomForest_classifier.predict(X_test)
-    print(f"    ==> accuracy: {round(accuracy_score(y_test, y_pred), 3)}")
-    # Save the model
-    with open(os.path.join(data_dir, 'model', 'RandomForest_classifier.pkl'), 'wb') as picklefile:
-        pickle.dump(RandomForest_classifier, picklefile)
+        if os.path.exists('model/multinomial_classifier.pkl'):
+            self.multinomial_classifier = pickle.load(open('model/multinomial_classifier.pkl', 'rb'))
+        else:
+            self.multinomial_classifier = MultinomialNB()
+            self.multinomial_classifier.fit(self.X_train, self.y_train)
+            pickle.dump(self.multinomial_classifier, open('model/multinomial_classifier.pkl', 'wb'))
+        print("Load Multinomial Naives Bayes:", end=' ')
+        print(round(accuracy_score(self.y_test, self.multinomial_classifier.predict(self.X_test)), 3))
 
 
-def classify_text():
-    text = entry.get("1.0", tk.END)
-    if len(text) == 0:
-        messagebox.showwarning("Advertisement", "Please enter text.")
-        return
+    def classify_text(self):
+        text = self.text_entry.get("1.0", 'end-1c')
+        preprocessed_text = self.preprocess_text(text)
+        features = self.vectorizer.transform([preprocessed_text]).toarray()
 
-    # Prétraitement du texte
-    stemmer = WordNetLemmatizer()
-    document = re.sub(r'\W', ' ', text)
-    document = re.sub(r'\s+[a-zA-Z]\s+', ' ', document)
-    document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
-    document = re.sub(r'\s+', ' ', document, flags=re.I)
-    document = re.sub(r'^b\s+', '', document)
-    document = document.lower()
-    document = document.split()
-    document = [stemmer.lemmatize(word) for word in document]
-    document = ' '.join(document)
+        selected_model = self.model_combo.get()
+        if selected_model == "Multinomial Naive Bayes":
+            predicted_label = self.multinomial_classifier.predict(features)
+        elif selected_model == "K-Nearest Neighbors":
+            predicted_label = self.KNeighbors_classifier.predict(features)
+        elif selected_model == "Random Forest":
+            predicted_label = self.RandomForest_classifier.predict(features)
 
-    # Transformer le texte en features
-    text_features = vectorizer.transform([document]).toarray()
-    text_features = tfidfconverter.transform(text_features).toarray()
+        messagebox.showinfo("Prediction Result", f"The predicted label is: {predicted_label[0]}")
 
-    # Prédire le label
-    choice = select_model.get()
+    def preprocess_text(self, text):
+        from nltk.stem import WordNetLemmatizer
 
-    with open(os.path.join(data_dir, 'model', choice), 'rb') as training_model:
-        current_model = pickle.load(training_model)
-    label = current_model.predict(text_features)[0]
+        stemmer = WordNetLemmatizer()
 
-    # Afficher le résultat
-    messagebox.showinfo("Result", "Label predict : {}".format(label))
+        document = re.sub(r'\W', ' ', text)
+        document = re.sub(r'\s+[a-zA-Z]\s+', ' ', document)
+        document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
+        document = document.lower()
+        document = document.split()
+        document = [stemmer.lemmatize(word) for word in document]
+        document = ' '.join(document)
+
+        return document
+
+    def open_github(self):
+        webbrowser.open_new("https://github.com/A-DONALD/AI-Classifier")
+
+    def create_gui(self):
+        self.window = tk.Tk()
+        self.window.title("Text Classification")
+        self.window.geometry('500x350')
+
+        self.model_label = tk.Label(self.window, text="Select Model:")
+        self.model_label.pack()
+        self.model_combo = ttk.Combobox(self.window, values=["Multinomial Naive Bayes", "K-Nearest Neighbors", "Random Forest"])
+        self.model_combo.current(0)
+        self.model_combo.pack()
+
+        self.text_entry = tk.Text(self.window, height=10, width=50)
+        self.text_entry.pack(pady=20)
+
+        self.classify_label = tk.Label(self.window, text="Launch the classification")
+        self.classify_label.pack()
+        self.classify_button = tk.Button(self.window, text="Classify", command=self.classify_text)
+        self.classify_button.pack()
+
+        self.github_label = tk.Label(self.window, text="See the repository on Github")
+        self.github_label.pack()
+        self.github_button = tk.Button(self.window, text="GitHub", command=self.open_github)
+        self.github_button.pack()
+
+        self.window.mainloop()
 
 
-def github():
-    webbrowser.open_new(r"https://github.com/A-DONALD/AI-Classifier")
-
-
-# Initialize the components of Tkinter
-root = tk.Tk()
-root.title("AI - Classifier")
-root.geometry("500x350")
-
-model_label = ttk.Label(root, text="Select a model ...")
-model_label.pack()
-
-# list of the different model in your model folder
-model_list = [filename for filename in os.listdir(data_dir + '\\model') if filename.endswith(".pkl")]
-select_model = ttk.Combobox(root, values=model_list, width=40)
-select_model.pack()
-
-# Créer le composant d'entrée de texte
-entry = tk.Text(root, height=10, width=50)
-entry.pack(pady=20)
-
-entry_label = ttk.Label(root, text="Click here to execute:")
-entry_label.pack()
-
-# Créer le bouton pour lancer la classification
-button = ttk.Button(root, text="Launch the classifier", command=classify_text)
-button.pack()
-
-github_label = ttk.Label(root, text="Found the project on github:")
-github_label.pack()
-
-# Creates a button that, when clicked, calls the function that sends you to your hyperlink.
-link = ttk.Button(root, text="Github", command=github)
-link.pack(padx=10, pady=10)
-
-# Lancer la boucle Tkinter
-root.mainloop()
+if __name__ == "__main__":
+    app = MainApp()
