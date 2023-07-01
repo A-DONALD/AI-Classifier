@@ -41,10 +41,10 @@ class MainApp:
 
     def load_data(self):
         print("Loading files ", end=" ")
-        for filename in os.listdir('../data_sets'):
+        for filename in os.listdir('data_sets'):
             if filename.endswith('.sgm'):
                 try:
-                    with open(os.path.join('../data_sets', filename), 'r', encoding='utf-8') as f:
+                    with open(os.path.join('data_sets', filename), 'r', encoding='utf-8') as f:
                         content = f.read()
                     print(colorama.Back.GREEN + " " + colorama.Style.RESET_ALL, end=" ")
                 except UnicodeDecodeError:
@@ -96,30 +96,30 @@ class MainApp:
 
     def load_or_create_models(self):
         print(" ")
-        if os.path.exists('model/RandomForest_classifier.pkl'):
-            self.RandomForest_classifier = pickle.load(open('model/RandomForest_classifier.pkl', 'rb'))
+        if os.path.exists('app/model/RandomForest_classifier.pkl'):
+            self.RandomForest_classifier = pickle.load(open('app/model/RandomForest_classifier.pkl', 'rb'))
         else:
             self.RandomForest_classifier = RandomForestClassifier(n_estimators=1000, random_state=0)
             self.RandomForest_classifier.fit(self.X_train, self.y_train)
-            pickle.dump(self.RandomForest_classifier, open('model/RandomForest_classifier.pkl', 'wb'))
+            pickle.dump(self.RandomForest_classifier, open('app/model/RandomForest_classifier.pkl', 'wb'))
         print("Load Random Forest:", end=' ')
         print(round(accuracy_score(self.y_test, self.RandomForest_classifier.predict(self.X_test)), 3))
 
-        if os.path.exists('model/KNeighbors_classifier.pkl'):
-            self.KNeighbors_classifier = pickle.load(open('model/KNeighbors_classifier.pkl', 'rb'))
+        if os.path.exists('app/model/KNeighbors_classifier.pkl'):
+            self.KNeighbors_classifier = pickle.load(open('app/model/KNeighbors_classifier.pkl', 'rb'))
         else:
             self.KNeighbors_classifier = KNeighborsClassifier(n_neighbors=5)
             self.KNeighbors_classifier.fit(self.X_train, self.y_train)
-            pickle.dump(self.KNeighbors_classifier, open('model/KNeighbors_classifier.pkl', 'wb'))
+            pickle.dump(self.KNeighbors_classifier, open('app/model/KNeighbors_classifier.pkl', 'wb'))
         print("Load K-Nearest Neighbors:", end=' ')
         print(round(accuracy_score(self.y_test, self.KNeighbors_classifier.predict(self.X_test)), 3))
 
-        if os.path.exists('model/multinomial_classifier.pkl'):
-            self.multinomial_classifier = pickle.load(open('model/multinomial_classifier.pkl', 'rb'))
+        if os.path.exists('app/model/multinomial_classifier.pkl'):
+            self.multinomial_classifier = pickle.load(open('app/model/multinomial_classifier.pkl', 'rb'))
         else:
             self.multinomial_classifier = MultinomialNB()
             self.multinomial_classifier.fit(self.X_train, self.y_train)
-            pickle.dump(self.multinomial_classifier, open('model/multinomial_classifier.pkl', 'wb'))
+            pickle.dump(self.multinomial_classifier, open('app/model/multinomial_classifier.pkl', 'wb'))
         print("Load Multinomial Naives Bayes:", end=' ')
         print(round(accuracy_score(self.y_test, self.multinomial_classifier.predict(self.X_test)), 3))
 
@@ -182,7 +182,3 @@ class MainApp:
         self.github_button.pack()
 
         self.window.mainloop()
-
-
-if __name__ == "__main__":
-    app = MainApp()
