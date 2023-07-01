@@ -45,10 +45,10 @@ Before you begin, make sure you have the following installed on your local machi
    cd AI-Classifier
    ```
 
-2. Execute the `app.py` script with the commands:
+2. Execute the `run.py` script with double click or the commands:
 
    ```
-   python app.py
+   python run.py
    ```
 
 3. More information about the project in the user manual: 
