@@ -51,5 +51,5 @@ Before you begin, make sure you have the following installed on your local machi
    python run.py
    ```
 
-3. More information about the project in the user manual: 
+3. More information about the project in the Wiki: [CLick Here](https://github.com/A-DONALD/AI-Classifier/wiki)
 
