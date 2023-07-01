@@ -128,8 +128,13 @@ class MainApp:
         text = self.text_entry.get("1.0", 'end-1c')
         preprocessed_text = self.preprocess_text(text)
         features = self.vectorizer.transform([preprocessed_text]).toarray()
-
         selected_model = self.model_combo.get()
+
+        if not selected_model or text.isspace():
+            tk.messagebox.showwarning("Document Classification Tool",
+                                      "Warning: Please select a model and enter some text")
+            return
+
         if selected_model == "Multinomial Naive Bayes":
             predicted_label = self.multinomial_classifier.predict(features)
         elif selected_model == "K-Nearest Neighbors":
