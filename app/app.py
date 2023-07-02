@@ -98,6 +98,8 @@ class MainApp:
 
     def load_or_create_models(self):
         print(" ")
+        if not (os.path.exists(self.model_dir)):
+            os.mkdir(self.model_dir)
         if os.path.exists('app/model/RandomForest_classifier.pkl'):
             self.RandomForest_classifier = pickle.load(open(os.path.join(self.model_dir, 'RandomForest_classifier.pkl'), 'rb'))
         else:
