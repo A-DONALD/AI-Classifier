@@ -45,17 +45,11 @@ Before you begin, make sure you have the following installed on your local machi
 
 ## Running the Application
 
-1. After the requirements has been installed, navigate to the app folder:
-
-   ```
-   cd AI-Classifier
-   ```
-
-2. Execute the `run.py` script with double click or the commands:
+* Execute the `run.py` script with double click or the commands:
 
    ```
    python run.py
    ```
 
-3. More information about the project in the project Wiki: [Here](https://github.com/A-DONALD/AI-Classifier/wiki)
+* More information about the project in the project Wiki: [Here](https://github.com/A-DONALD/AI-Classifier/wiki)
 
